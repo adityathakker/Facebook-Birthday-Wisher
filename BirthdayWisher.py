@@ -257,7 +257,7 @@ class BirthdayWisher(object):
         user_ids = self.__extract_birthday_ids()
         for user_id in user_ids:
             data = self.__get_user_info(user_id)
-            # self.__send(user_id, "Happy Birthday " + data["firstName"] + "!")
+            self.__send(user_id, "Happy Birthday " + data["firstName"] + "!")
             print(colored("Greetings Sent to " + data["firstName"], "blue"))
 
         history_dict = dict()
