@@ -25,7 +25,7 @@ FB_URL = "https://www.facebook.com"
 FB_Mobile_URL = "https://m.facebook.com/"
 UserInfoURL = "https://www.facebook.com/chat/user_info/"
 BIRTHDAY_URL = "https://www.facebook.com/events/birthdays"
-HISTORY_FILE = "history"
+HISTORY_FILE = ".history"
 
 USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
@@ -263,7 +263,7 @@ class BirthdayWisher(object):
         user_ids = self.__extract_birthday_ids()
         for user_id in user_ids:
             data = self.__get_user_info(user_id)
-            self.__send(user_id, "Happy Birthday " + data["firstName"] + "!")
+            self.__send(user_id, "Happy Birthday!")
             print(colored("Greetings Sent to " + data["firstName"], "blue"))
 
         history_dict = dict()
