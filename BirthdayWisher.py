@@ -1,11 +1,17 @@
+'''
+Project Title: Facebook Birthday Wisher
+Developer: AdityaThakker (Github UserName: @adityathakker) 
+Website: http://www.adityathakker.com
+Github Repo: https://github.com/adityathakker/Facebook-Birthday-Wisher
+'''
+
 import json
 import os
 import pickle
 import re
 import time
 from datetime import datetime
-from random import random, choice
-
+import random
 import requests
 import requests.utils
 from bs4 import BeautifulSoup
@@ -42,7 +48,7 @@ class BirthdayWisher(object):
         self.__seq = "0"
         self.__default_payload = {}
         self.__client = 'mercury'
-        user_agent = choice(USER_AGENTS)
+        user_agent = random.choice(USER_AGENTS)
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Referer': FB_URL,
@@ -117,7 +123,7 @@ class BirthdayWisher(object):
         response = self.__post(Login_URL, data)
 
         if 'home' in response.url:
-            self.client_id = hex(int(random() * 2147483648))[2:]
+            self.client_id = hex(int(random.random() * 2147483648))[2:]
             self.start_time = int(time.time() * 1000)
             # logged in users facebook user id
             self.uid = int(self.__session.cookies['c_user'])
@@ -158,7 +164,7 @@ class BirthdayWisher(object):
     @staticmethod
     def __generate_offline_threading_id():
         ret = int(time.time() * 1000)
-        value = int(random() * 4294967295)
+        value = int(random.random() * 4294967295)
         string = ("0000000000000000000000" + bin(value))[-22:]
         msgs = bin(ret) + string
         return str(int(msgs, 2))
@@ -193,10 +199,10 @@ class BirthdayWisher(object):
             'offline_threading_id': message_and_OTID,
             'message_id': message_and_OTID,
             'threading_id': "<%s:%s-%s@mail.projektitan.com>" % (
-                time.time() * 1000, int(random() * 4294967295), self.client_id),
+                time.time() * 1000, int(random.random() * 4294967295), self.client_id),
             'ephemeral_ttl_mode:': '0',
             'manual_retry_cnt': '0',
-            'signatureID': hex(int(random() * 2147483648)),
+            'signatureID': hex(int(random.random() * 2147483648)),
             'has_attachment': False,
             'other_user_fbid': recipient_id,
             'specific_to_list[0]': 'fbid:' + str(recipient_id),
