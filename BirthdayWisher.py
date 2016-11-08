@@ -20,20 +20,21 @@ from bs4 import Comment
 from termcolor import colored
 
 # URLs
-Login_URL = "https://m.facebook.com/login.php?login_attempt=1"
-SendURL = "https://www.facebook.com/messaging/send/"
-FB_URL = "https://www.facebook.com"
-FB_Mobile_URL = "https://m.facebook.com/"
-UserInfoURL = "https://www.facebook.com/chat/user_info/"
-BIRTHDAY_URL = "https://www.facebook.com/events/birthdays"
-HISTORY_FILE = ".history"
-ACCOUNT_LANGUAGE = "https://www.facebook.com/ajax/settings/language/account.php?dpr=1"
-LANGUAGE = "en_US"
-USER_AGENTS = [
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/601.1.10 (KHTML, like Gecko) Version/8.0.5 Safari/601.1.10",
-    "Mozilla/5.0 (Windows NT 6.3; WOW64; ; NCT50_AAP285C84A1328) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
+login_url = "https://m.facebook.com/login.php?login_attempt=1"
+send_message_url = "https://www.facebook.com/messaging/send/"
+fb_url = "https://www.facebook.com"
+fb_mobile_url = "https://m.facebook.com/"
+user_info_url = "https://www.facebook.com/chat/user_info/"
+birthday_url = "https://www.facebook.com/events/birthdays"
+history_file_name = ".history"
+account_language = "https://www.facebook.com/ajax/settings/language/account.php?dpr=1"
+
+# Change this to whatever you want
+my_language = "en_US"
+
+list_of_user_agents = [
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Version/8.0.5 Safari/601.1.10"
 ]
 
 
@@ -50,11 +51,11 @@ class BirthdayWisher(object):
         self.__seq = "0"
         self.__default_payload = {}
         self.__client = 'mercury'
-        user_agent = random.choice(USER_AGENTS)
+        user_agent = random.choice(list_of_user_agents)
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Referer': FB_URL,
-            'Origin': FB_URL,
+            'Referer': fb_url,
+            'Origin': fb_url,
             'User-Agent': user_agent,
             'Connection': 'keep-alive',
         }
@@ -114,7 +115,7 @@ class BirthdayWisher(object):
         if not (self.email and self.password):
             raise Exception("Email And Password Are Both Required")
 
-        soup = BeautifulSoup(self.__get(FB_Mobile_URL).text, "lxml")
+        soup = BeautifulSoup(self.__get(fb_mobile_url).text, "lxml")
         data = dict((elem['name'], elem['value']) for elem in soup.findAll("input") if
                     elem.has_attr('value') and elem.has_attr('name'))
         data['email'] = self.email
@@ -122,7 +123,7 @@ class BirthdayWisher(object):
         data['login'] = 'Log In'
 
         self.__request_counter += 1
-        response = self.__post(Login_URL, data)
+        response = self.__post(login_url, data)
 
         if 'home' in response.url:
             self.client_id = hex(int(random.random() * 2147483648))[2:]
@@ -132,7 +133,7 @@ class BirthdayWisher(object):
             self.user_channel = "p_" + str(self.uid)
             self.ttstamp = ''
 
-            response = self.__get(FB_URL)
+            response = self.__get(fb_url)
             soup = BeautifulSoup(response.text, "lxml")
             self.fb_dtsg = soup.find("input", {'name': 'fb_dtsg'})['value']
             self._set_ttstamp()
@@ -212,7 +213,7 @@ class BirthdayWisher(object):
 
         }
 
-        response = self.__post(SendURL, data)
+        response = self.__post(send_message_url, data)
 
         print("Send Data")
         print(data)
@@ -220,7 +221,7 @@ class BirthdayWisher(object):
 
     def __get_user_info(self, user_id):
         data = {"ids[0]": user_id}
-        response = self.__post(UserInfoURL, data)
+        response = self.__post(user_info_url, data)
         info = json.loads(re.sub(r"^[^{]*", '', response.text, 1))
         full_data = [details for profile, details in info['payload']['profiles'].items()]
         if len(full_data) == 1:
@@ -228,7 +229,7 @@ class BirthdayWisher(object):
         return full_data
 
     def __extract_birthday_ids(self):
-        response = self.__get(BIRTHDAY_URL)
+        response = self.__get(birthday_url)
         soup = BeautifulSoup(response.text, "lxml")
 
         codes = soup.findAll("code")
@@ -256,8 +257,8 @@ class BirthdayWisher(object):
         return user_ids
 
     def wish(self):
-        if os.path.exists(HISTORY_FILE):
-            history_dict = pickle.load(open(HISTORY_FILE, "r"))
+        if os.path.exists(history_file_name):
+            history_dict = pickle.load(open(history_file_name, "r"))
             if time.strftime("%x") == history_dict["last_executed"]:
                 print(colored("Today's Greetings Were Already Sent", "yellow"))
                 self.change_language()
@@ -272,7 +273,7 @@ class BirthdayWisher(object):
 
         history_dict = dict()
         history_dict["last_executed"] = time.strftime("%x")
-        pickle.dump(history_dict, open(HISTORY_FILE, "w"))
+        pickle.dump(history_dict, open(history_file_name, "w"))
 
         self.change_language()
         print(colored("Exiting...", "red"))
@@ -281,10 +282,10 @@ class BirthdayWisher(object):
     # So I have to manually change back my language to English
     def change_language(self):
         data = dict()
-        data["new_language"] = LANGUAGE
+        data["new_language"] = my_language
         data["new_fallback_language"] = ""
         data["__dyn"] = ""
         data["__af"] = 0
         data["__be"] = -1
         data["__pc"] = "PHASED:DEFAULT"
-        self.__post(ACCOUNT_LANGUAGE, data)
+        self.__post(account_language, data)
