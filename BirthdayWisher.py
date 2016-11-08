@@ -8,10 +8,11 @@ Github Repo: https://github.com/adityathakker/Facebook-Birthday-Wisher
 import json
 import os
 import pickle
+import random
 import re
 import time
 from datetime import datetime
-import random
+
 import requests
 import requests.utils
 from bs4 import BeautifulSoup
@@ -26,7 +27,8 @@ FB_Mobile_URL = "https://m.facebook.com/"
 UserInfoURL = "https://www.facebook.com/chat/user_info/"
 BIRTHDAY_URL = "https://www.facebook.com/events/birthdays"
 HISTORY_FILE = ".history"
-
+ACCOUNT_LANGUAGE = "https://www.facebook.com/ajax/settings/language/account.php?dpr=1"
+LANGUAGE = "en_US"
 USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/601.1.10 (KHTML, like Gecko) Version/8.0.5 Safari/601.1.10",
@@ -258,6 +260,8 @@ class BirthdayWisher(object):
             history_dict = pickle.load(open(HISTORY_FILE, "r"))
             if time.strftime("%x") == history_dict["last_executed"]:
                 print(colored("Today's Greetings Were Already Sent", "yellow"))
+                self.change_language()
+                print(colored("Exiting...", "red"))
                 return
 
         user_ids = self.__extract_birthday_ids()
@@ -269,4 +273,18 @@ class BirthdayWisher(object):
         history_dict = dict()
         history_dict["last_executed"] = time.strftime("%x")
         pickle.dump(history_dict, open(HISTORY_FILE, "w"))
+
+        self.change_language()
         print(colored("Exiting...", "red"))
+
+    # After every request my language gets changed to local language
+    # So I have to manually change back my language to English
+    def change_language(self):
+        data = dict()
+        data["new_language"] = LANGUAGE
+        data["new_fallback_language"] = ""
+        data["__dyn"] = ""
+        data["__af"] = 0
+        data["__be"] = -1
+        data["__pc"] = "PHASED:DEFAULT"
+        self.__post(ACCOUNT_LANGUAGE, data)
