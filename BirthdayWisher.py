@@ -242,19 +242,22 @@ class BirthdayWisher(object):
         comments = code.findAll(text=lambda text: isinstance(text, Comment))
         birthday_div = comments[0]
 
-        soup = BeautifulSoup(birthday_div, "lxml")
-        ul_element = soup.find("ul", {"class": "_3ng0"})
-        all_birthdays_div = ul_element.findAll("div", {"class": "clearfix _3ng1"})
+        try:
+            soup = BeautifulSoup(birthday_div, "lxml")
+            ul_element = soup.find("ul", {"class": "_3ng0"})
+            all_birthdays_div = ul_element.findAll("div", {"class": "clearfix _3ng1"})
 
-        user_ids = list()
-        for each_birthday_div in all_birthdays_div:
-            name_div = each_birthday_div.find("div", {"class": "_3ng2"})
-            name_a = name_div.find("a")
-            user_id = str(name_a["data-hovercard"])
-            user_id = user_id[28:]
-            # print(user_id)
-            user_ids.append(user_id)
-        return user_ids
+            user_ids = list()
+            for each_birthday_div in all_birthdays_div:
+                name_div = each_birthday_div.find("div", {"class": "_3ng2"})
+                name_a = name_div.find("a")
+                user_id = str(name_a["data-hovercard"])
+                user_id = user_id[28:]
+                # print(user_id)
+                user_ids.append(user_id)
+            return user_ids
+        except Exception as e:
+            return list()
 
     def wish(self):
         if os.path.exists(history_file_name):
@@ -263,20 +266,26 @@ class BirthdayWisher(object):
                 print(colored("Today's Greetings Were Already Sent", "yellow"))
                 self.change_language()
                 print(colored("Exiting...", "red"))
-                return
+                return False
 
         user_ids = self.__extract_birthday_ids()
-        for user_id in user_ids:
-            data = self.__get_user_info(user_id)
-            self.__send(user_id, "Happy Birthday!")
-            print(colored("Greetings Sent to " + data["firstName"], "blue"))
+        if len(user_ids) > 0:
+            for user_id in user_ids:
+                data = self.__get_user_info(user_id)
+                self.__send(user_id, "Happy Birthday!")
+                print(colored("Greetings Sent to " + data["firstName"], "blue"))
 
-        history_dict = dict()
-        history_dict["last_executed"] = time.strftime("%x")
-        pickle.dump(history_dict, open(history_file_name, "w"))
+            history_dict = dict()
+            history_dict["last_executed"] = time.strftime("%x")
+            pickle.dump(history_dict, open(history_file_name, "w"))
 
-        self.change_language()
-        print(colored("Exiting...", "red"))
+            self.change_language()
+            print(colored("Exiting...", "red"))
+            return True
+        else:
+            print(colored("No Birthday's Today", "blue"))
+            print(colored("Exiting...", "red"))
+            return False
 
     # After every request my language gets changed to local language
     # So I have to manually change back my language to English
