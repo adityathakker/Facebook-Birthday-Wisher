@@ -10,6 +10,7 @@ import os
 import pickle
 import random
 import re
+import socket
 import time
 from datetime import datetime
 
@@ -74,6 +75,20 @@ class BirthdayWisher(object):
             raise Exception("Login has Failed. Please Check Email and Password")
 
         self.threads = []
+
+    @staticmethod
+    def is_connected():
+        try:
+            # see if we can resolve the host name -- tells us if there is
+            # a DNS listening
+            host = socket.gethostbyname(fb_url)
+            # connect to the host -- tells us if the host is actually
+            # reachable
+            s = socket.create_connection((host, 80), 2)
+            return True
+        except:
+            pass
+        return False
 
     def _set_ttstamp(self):
         for i in self.fb_dtsg:
@@ -268,22 +283,27 @@ class BirthdayWisher(object):
                 print(colored("Exiting...", "red"))
                 return False
 
-        user_ids = self.__extract_birthday_ids()
-        if len(user_ids) > 0:
-            for user_id in user_ids:
-                data = self.__get_user_info(user_id)
-                self.__send(user_id, "Happy Birthday!")
-                print(colored("Greetings Sent to " + data["firstName"], "blue"))
+        if self.is_connected():
+            user_ids = self.__extract_birthday_ids()
+            if len(user_ids) > 0:
+                for user_id in user_ids:
+                    data = self.__get_user_info(user_id)
+                    self.__send(user_id, "Happy Birthday!")
+                    print(colored("Greetings Sent to " + data["firstName"], "blue"))
 
-            history_dict = dict()
-            history_dict["last_executed"] = time.strftime("%x")
-            pickle.dump(history_dict, open(history_file_name, "w"))
+                history_dict = dict()
+                history_dict["last_executed"] = time.strftime("%x")
+                pickle.dump(history_dict, open(history_file_name, "w"))
 
-            self.change_language()
-            print(colored("Exiting...", "red"))
-            return True
+                self.change_language()
+                print(colored("Exiting...", "red"))
+                return True
+            else:
+                print(colored("No Birthday's Today", "blue"))
+                print(colored("Exiting...", "red"))
+                return False
         else:
-            print(colored("No Birthday's Today", "blue"))
+            print(colored("No Internet Connection", "red"))
             print(colored("Exiting...", "red"))
             return False
 
