@@ -1,5 +1,5 @@
 # Facebook-Birthday-Wisher
-Facebook Birthday Wisher as the name suggests a simple python script which will wish all the friends who have their Birthdays Today.
+Facebook Birthday Wisher as the name suggests python script which will wish all the friends who have their Birthdays Today.
 
 #Requirements
 1. Pickle Library
