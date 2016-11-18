@@ -79,14 +79,9 @@ class BirthdayWisher(object):
     @staticmethod
     def is_connected():
         try:
-            # see if we can resolve the host name -- tells us if there is
-            # a DNS listening
-            host = socket.gethostbyname(fb_url)
-            # connect to the host -- tells us if the host is actually
-            # reachable
-            s = socket.create_connection((host, 80), 2)
+            socket.create_connection(("www.facebook.com", 80))
             return True
-        except:
+        except OSError:
             pass
         return False
 
@@ -299,6 +294,7 @@ class BirthdayWisher(object):
                 print(colored("Exiting...", "red"))
                 return True
             else:
+                self.change_language()
                 print(colored("No Birthday's Today", "blue"))
                 print(colored("Exiting...", "red"))
                 return False
