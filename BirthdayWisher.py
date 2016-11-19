@@ -224,9 +224,6 @@ class BirthdayWisher(object):
         }
 
         response = self.__post(send_message_url, data)
-
-        print("Send Data")
-        print(data)
         return response.ok
 
     def __get_user_info(self, user_id):
