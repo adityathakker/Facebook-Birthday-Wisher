@@ -34,9 +34,7 @@ account_language = "https://www.facebook.com/ajax/settings/language/account.php?
 my_language = "en_US"
 
 list_of_user_agents = [
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Version/8.0.5 Safari/601.1.10"
-]
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36"]
 
 
 class BirthdayWisher(object):
@@ -149,7 +147,7 @@ class BirthdayWisher(object):
             self._set_ttstamp()
 
             # Set default payload
-            self.__default_payload['__rev'] = int(response.text.split('"revision":', 1)[1].split(",", 1)[0])
+            self.__default_payload['__rev'] = int(response.text.split('"client_revision":', 1)[1].split(",", 1)[0])
             self.__default_payload['__user'] = self.uid
             self.__default_payload['__a'] = '1'
             self.__default_payload['ttstamp'] = self.ttstamp
@@ -246,6 +244,9 @@ class BirthdayWisher(object):
                 code = each_code
                 break
 
+        if isinstance(code, str):
+        	return list()
+        
         comments = code.findAll(text=lambda text: isinstance(text, Comment))
         birthday_div = comments[0]
 
@@ -268,12 +269,16 @@ class BirthdayWisher(object):
 
     def wish(self):
         if os.path.exists(history_file_name):
-            history_dict = pickle.load(open(history_file_name, "r"))
-            if time.strftime("%x") == history_dict["last_executed"]:
-                print(colored("Today's Greetings Were Already Sent", "yellow"))
-                self.change_language()
-                print(colored("Exiting...", "red"))
-                return False
+            try:
+                history_dict = pickle.load(open(history_file_name, "r"))
+                if time.strftime("%x") == history_dict["last_executed"]:
+                    print(colored("Today's Greetings Were Already Sent", "yellow"))
+                    self.change_language()
+                    print(colored("Exiting...", "red"))
+                    return False
+            except Exception as e:
+                pass
+            
 
         if self.is_connected():
             user_ids = self.__extract_birthday_ids()
